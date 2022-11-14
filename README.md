@@ -26,6 +26,8 @@ Create a new PowerShell Management agent
 * Configuration parameters :
   * DomainName: Name of your Active Directory domain
   * ServerName: FQDN of a domain controller
+![image](https://user-images.githubusercontent.com/5471186/201685345-a1b1f5ed-f652-4c2a-bc51-e145a979c465.png)
+
 
 ### Connectivity screen
 * Import Script: Full path to pwdhash-import.ps1
