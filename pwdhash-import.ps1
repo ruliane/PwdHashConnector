@@ -1,7 +1,7 @@
 param
 (
-	$Username = "",
-	$Password = "",
+	$Username,
+	$Password,
     $Credentials,
 	$OperationType = "Full",
 	[bool] $UsePagedImport,
@@ -11,15 +11,34 @@ param
 
 $ErrorActionPreference = "Stop"
 
-Import-Module "C:\Temp\PwdHashConnector\DSInternals_v4.7\DSInternals\DSInternals.psd1"
+Function Write-Log {
+    Param (
+        [Parameter(Mandatory)][String]$Message,
+        [int]$EventId = 0,
+        [ValidateSet("Error", "Warning", "Information")]$Level = "Information"
+    )
+
+    Try {
+        Write-EventLog `
+             -LogName "Application" `
+             -Source "PwdHashConnector" `
+             -EntryType $Level `
+             -EventId $EventId `
+             -Message $Message
+    }
+    Catch {
+        throw "Unable to write event. Please Check that source PwdHashConnector exists. (New-EventLog -Source ""PwdHashConnector"" -LogName Application)"
+    }
+}
+
+Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "DSInternals_v4.7\DSInternals\DSInternals.psd1")
 Import-Module ActiveDirectory
 
-	function log($message) {
-		if ( $message ) {
-			$message | Out-File -Append -FilePath "C:\Temp\pwdhash-import.log"
-		}
-	}
+If ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($Password) -or [string]::IsNullOrEmpty($ConfigurationParameter.DomainName) -or [string]::IsNullOrEmpty($ConfigurationParameter.ServerName)) {
+    throw "Argument missing. Check that UserName, Password, Domain name and Server name are specified."
+}
 
+Write-Log -Message "Querying directory..." -EventId 2
 $ADUsers = Get-ADUser -Filter * -Server $ConfigurationParameter.ServerName -Credential $Credentials
 
 foreach ($ADUser in $ADUsers)
@@ -37,7 +56,6 @@ foreach ($ADUser in $ADUsers)
 
     $obj.samAccountName = $ADUser.samaccountname
 
-    log ("grab hash of " + $ADUser.samaccountname + " from " + $ConfigurationParameter.ServerName + " using " + $Credentials.UserName)
     $obj.nTHash = (Get-ADReplAccount -SamAccountName $ADUser.samaccountname -Server $ConfigurationParameter.ServerName -Credential $Credentials).NTHash
 
 	$obj

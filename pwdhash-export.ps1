@@ -1,35 +1,50 @@
 param (
-	$username,
-	$password,
-    $Credentials,
+	[Parameter(Mandatory)]$username,
+	[Parameter(Mandatory)]$password,
+    [Parameter(Mandatory)]$Credentials,
     $ConfigurationParameter
 )
+
+Function Write-Log {
+    Param (
+        [Parameter(Mandatory)][String]$Message,
+        [int]$EventId = 0,
+        [ValidateSet("Error", "Warning", "Information")]$Level = "Information"
+    )
+
+    Try {
+        Write-EventLog `
+                -LogName "Application" `
+                -Source "PwdHashConnector" `
+                -EntryType $Level `
+                -EventId $EventId `
+                -Message $Message
+    }
+    Catch {
+        throw "Unable to write event. Please Check that source PwdHashConnector exists. (New-EventLog -Source ""PwdHashConnector"" -LogName Application)"
+    }
+}
 
 begin
 {
     $ErrorActionPreference = "Stop"
 
-    Import-Module "C:\Temp\PwdHashConnector\DSInternals_v4.7\DSInternals\DSInternals.psd1"
+    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "DSInternals_v4.7\DSInternals\DSInternals.psd1")
     Import-Module ActiveDirectory
+
+    If ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($Password) -or [string]::IsNullOrEmpty($ConfigurationParameter.DomainName) -or [string]::IsNullOrEmpty($ConfigurationParameter.ServerName)) {
+        throw "Argument missing. Check that UserName, Password, Domain name and Server name are specified."
+    }
 }
 
 process
 {
-	function log($message) {
-		if ( $message ) {
-			$message | Out-File -Append -FilePath "C:\Temp\pwdhash-export.log"
-		}
-	}
-
 	$identifier = $_."[Identifier]"
 	$anchor = $_."[Anchor]"
 	$dn = $_."[DN]"
 	$objectmodificationtype = $_."[ObjectModificationType]"
 	$samaccountname = $_.samaccountname
     $nTHash = $_.nTHash
-	
-	log "------"
-	log $dn
 	
 	# used to return status to sync engine; we assume that no error will occur
 	$actioninfo = 'script'
@@ -53,8 +68,12 @@ process
 		    }
 		    'Replace' {
                 $actioninfo = 'replace'
-                log ("replace - " + $samaccountname + " - " + $nTHash)
-                Set-SamAccountPasswordHash -SamAccountName $samaccountname -Domain $ConfigurationParameter.DomainName -NTHash $nTHash -Credential $Credentials -Server $ConfigurationParameter.ServerName
+                Set-SamAccountPasswordHash `
+                    -SamAccountName $samaccountname `
+                    -Domain $ConfigurationParameter.DomainName `
+                    -NTHash $nTHash `
+                    -Credential $Credentials `
+                    -Server $ConfigurationParameter.ServerName
 		    }
 	    }
     }
@@ -62,7 +81,6 @@ process
 	{
 		$errorstatus = ( "{0}-error" -f $actioninfo )
 		$errordetail = $error[0]
-        log $_
 	}
 
 	# return status about export operation
