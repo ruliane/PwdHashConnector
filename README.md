@@ -5,6 +5,9 @@ Password Synchronization based on PSMA and DSInternals
 ## Prerequisites
 Søren Granfeldt's PowerShell module: https://github.com/sorengranfeldt/psma/releases
 
+Account permissions:
+[TODO]
+
 ## Installation
 Copy source to a directory
 
