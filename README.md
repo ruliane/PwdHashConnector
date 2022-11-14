@@ -21,6 +21,8 @@ Create a new PowerShell Management agent
 
 ### Create Management Agent screen
 * Schema Script: Full path to pwdhash-schema.ps1
+* Username: user account used to connect your Active Directory (see Prerequisites)
+* Password: Password for this user account
 * Configuration parameters :
   * DomainName: Name of your Active Directory domain
   * ServerName: FQDN of a domain controller
