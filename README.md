@@ -11,7 +11,7 @@ Copy source to a directory
 Download and copy Michael Grafnetter's DSInternals to the same directory : https://github.com/MichaelGrafnetter/DSInternals/releases
 
 Create event log:
-New-EventLog -Source "FIM.MARE" -LogName Application
+New-EventLog -Source "PwdHashConnector" -LogName Application
 
 ## Management agent
 Create a new PowerShell Management agent 
