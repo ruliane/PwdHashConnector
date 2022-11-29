@@ -8,7 +8,9 @@ Password Synchronization based on PowerShell MA and DSInternals PowerShell modul
 You must have [Søren Granfeldt's Powershell Management Agent](https://github.com/sorengranfeldt/psma/releases)
 
 ### Account permissions
-The Management Agent account must have the "Replicate Directory Changes All" permission on the source and destination domains.
+The Management Agent account must have "Replicate Directory Changes" and "Replicate Directory Changes All" permissions on the source and destination domains.
+
+![image](https://user-images.githubusercontent.com/5471186/204556109-f4ef2ef1-f84e-4053-824a-85cb4e3394f2.png)
 
 ## Installation
 
