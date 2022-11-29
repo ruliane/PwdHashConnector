@@ -1,11 +1,11 @@
 # PwdHashConnector
-Password Synchronization based on PSMA and DSInternals 
+Password Synchronization based on PowerShell MA and DSInternals PowerShell module
 
 
 ## Prerequisites
 
 ### PowerShell module
-You must have [Søren Granfeldt's PowerShell module](https://github.com/sorengranfeldt/psma/releases)
+You must have [Søren Granfeldt's Powershell Management Agent](https://github.com/sorengranfeldt/psma/releases)
 
 ### Account permissions
 The Management Agent account must have the "Replicate Directory Changes All" permission on the source and destination domains.
