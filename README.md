@@ -38,6 +38,7 @@ In the Metaverse Designer, add a binary attribute to the class "person".
 * Configuration parameters :
   * DomainName: Name of your Active Directory domain
   * ServerName: FQDN of a domain controller
+  * BaseDN: OU to search accounts, separated with pipe. Example: BaseDN=OU=External,OU=Accounts,DC=contoso,DC=local|OU=Internal,OU=Accounts,DC=contoso,DC=local
 
 ![image](https://user-images.githubusercontent.com/5471186/204509806-27a0c9c1-3a97-4a7e-9f7c-473a12333701.png)
 
