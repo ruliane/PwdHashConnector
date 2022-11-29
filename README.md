@@ -15,6 +15,7 @@ The Management Agent account must have the "Replicate Directory Changes All" per
 * Copy source to a directory of your choice, for example C:\Scripts\PwdHashConnector
 
 * Download and copy [Michael Grafnetter's DSInternals Powershell module](https://github.com/MichaelGrafnetter/DSInternals/releases) to the same directory. You now have the following content:
+
 ![image](https://user-images.githubusercontent.com/5471186/204508237-2d9c7785-0822-45c2-a29e-fd18bdea7ecf.png)
 
 * Create event log source:
@@ -61,7 +62,7 @@ Configure your join rule as needed. I recommend using a unique attribute, such a
 ![image](https://user-images.githubusercontent.com/5471186/204516025-273e15f6-33df-41de-878f-2c89746c4aad.png)
 
 ### Configure Attribute Flow screen
-The only needed flow is the nTHash one. Import/export this attribut from/to the metaverse attribute created previously.
+The only attribute needed `nTHash`. Import/export this attribute from/to the metaverse attribute created previously.
 
 ![image](https://user-images.githubusercontent.com/5471186/204515948-a2722764-25ce-4043-adc9-c09ff283d7ec.png)
 
