@@ -1,51 +1,65 @@
 param (
+    [Parameter(ValueFromPipeline=$true)]$exportentries,
 	[Parameter(Mandatory)]$username,
 	[Parameter(Mandatory)]$password,
     [Parameter(Mandatory)]$Credentials,
-    $ConfigurationParameter
+    $AuxUsername,
+    $AuxPassword,
+    $AuxCredentials,
+    $ExportType,
+    $ConfigurationParameter,
+    $Schema
 )
 
-Function Write-Log {
-    Param (
-        [Parameter(Mandatory)][String]$Message,
-        [int]$EventId = 0,
-        [ValidateSet("Error", "Warning", "Information")]$Level = "Information"
-    )
-
-    Try {
-        Write-EventLog `
-                -LogName "Application" `
-                -Source "PwdHashConnector" `
-                -EntryType $Level `
-                -EventId $EventId `
-                -Message $Message
-    }
-    Catch {
-        throw "Unable to write event. Please Check that source PwdHashConnector exists. (New-EventLog -Source ""PwdHashConnector"" -LogName Application)"
-    }
-}
-
-begin
-{
+Begin {
     $ErrorActionPreference = "Stop"
 
-    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "DSInternals_v4.7\DSInternals\DSInternals.psd1")
-    Import-Module ActiveDirectory
+    Function Write-Log {
+        Param (
+            [Parameter(Mandatory)][String]$Message,
+            [int]$EventId = 0,
+            [ValidateSet("Error", "Warning", "Information")]$Level = "Information"
+        )
 
-    If ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($Password) -or [string]::IsNullOrEmpty($ConfigurationParameter.DomainName) -or [string]::IsNullOrEmpty($ConfigurationParameter.ServerName)) {
-        throw "Argument missing. Check that UserName, Password, Domain name and Server name are specified."
+        Try {
+            Write-EventLog `
+                    -LogName "Application" `
+                    -Source "PwdHashConnector" `
+                    -EntryType $Level `
+                    -EventId $EventId `
+                    -Message $Message
+        }
+        Catch {
+            throw "Unable to write event. Please Check that source PwdHashConnector exists. (New-EventLog -Source ""PwdHashConnector"" -LogName Application)"
+        }
+    }
+
+    Try {
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "DSInternals\DSInternals.psd1")
+        Import-Module ActiveDirectory
+    }
+    Catch {
+        Write-Log -Message $_ -EventId 0 -Level Error
+        throw
+    }
+
+    If ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($Password) -or [string]::IsNullOrEmpty($ConfigurationParameter.ServerName)) {
+        $Message = "Argument missing. Check that UserName, Password and Server name are specified."
+        Write-Log -Message $Message -EventId 1 -Level Error
+        throw $Message
     }
 }
 
-process
-{
+Process {
 	$identifier = $_."[Identifier]"
 	$anchor = $_."[Anchor]"
 	$dn = $_."[DN]"
 	$objectmodificationtype = $_."[ObjectModificationType]"
 	$samaccountname = $_.samaccountname
+    #$sid = $_.objectSid
+    $sid = New-Object System.Security.Principal.SecurityIdentifier($_.objectSid, 0)
     $nTHash = $_.nTHash
-	
+
 	# used to return status to sync engine; we assume that no error will occur
 	$actioninfo = 'script'
 	$errorstatus = "success"
@@ -58,22 +72,26 @@ process
 		Switch ($objectmodificationtype) {
             'Add' {
 			    $actioninfo = 'operation'
-                log ("Add - " + $samaccountname + " - " + $nTHash)
                 throw("operation-not-supported")
 		    }
 		    'Delete' {
 			    $actioninfo = 'operation'
-                log ("Delete - " + $samaccountname + " - " + $nTHash)
                 throw("operation-not-supported")
 		    }
 		    'Replace' {
                 $actioninfo = 'replace'
-                Set-SamAccountPasswordHash `
-                    -SamAccountName $samaccountname `
-                    -Domain $ConfigurationParameter.DomainName `
-                    -NTHash $nTHash `
-                    -Credential $Credentials `
-                    -Server $ConfigurationParameter.ServerName
+                Try {
+                    Set-SamAccountPasswordHash `
+                        -Sid $sid `
+                        -NTHash $nTHash `
+                        -Credential $Credentials `
+                        -Server $ConfigurationParameter.ServerName
+                }
+                Catch [UnauthorizedAccessException] {
+                    Write-Log -Message "Error while pushing password for $($samAccountName): $_" -EventId 2 -Level Warning
+                    $errorstatus = "access-denied" 
+		            $errordetail = $error[0]
+                }
 		    }
 	    }
     }
@@ -91,6 +109,5 @@ process
 	$status
 }
 
-end
-{
+End {
 }

@@ -31,15 +31,39 @@ Function Write-Log {
     }
 }
 
-Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "DSInternals_v4.7\DSInternals\DSInternals.psd1")
-Import-Module ActiveDirectory
-
-If ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($Password) -or [string]::IsNullOrEmpty($ConfigurationParameter.DomainName) -or [string]::IsNullOrEmpty($ConfigurationParameter.ServerName)) {
-    throw "Argument missing. Check that UserName, Password, Domain name and Server name are specified."
+Try {
+    Import-Module (Join-Path -Path $PSScriptRoot -ChildPath "DSInternals\DSInternals.psd1")
+    Import-Module ActiveDirectory
+}
+Catch {
+    Write-Log -Message $_ -EventId 0 -Level Error
+    throw
 }
 
-Write-Log -Message "Querying directory..." -EventId 2
-$ADUsers = Get-ADUser -Filter * -Server $ConfigurationParameter.ServerName -Credential $Credentials
+If ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($Password) -or [string]::IsNullOrEmpty($ConfigurationParameter.ServerName)) {
+    $Message = "Argument missing. Check that UserName, Password and Server name are specified."
+    Write-Log -Message $Message -EventId 1 -Level Error
+    throw $Message
+}
+
+If (-not $BaseDN) {
+    $BaseDN = (Get-ADDomain -Server $ConfigurationParameter.ServerName).distinguishedName
+}
+$ADUsers = $null
+Foreach ($BaseDN in $ConfigurationParameter.BaseDN.SubString(1).Split($ConfigurationParameter.BaseDN[0])) {
+    Try {
+        # Querying all standard User accounts (filter out trusts and others non-user objects)
+        $ADUsers += Get-ADUser `
+                    -SearchBase $BaseDN `
+                    -Filter { samAccountType -eq 0x30000000 } `
+                    -Server $ConfigurationParameter.ServerName `
+                    -Credential $Credentials
+    }
+    Catch {
+        Write-Log -Message "Unable to query ${BaseDN}: $_" -EventId 3 -Level Error
+        throw
+    }
+}
 
 foreach ($ADUser in $ADUsers)
 {
@@ -56,7 +80,19 @@ foreach ($ADUser in $ADUsers)
 
     $obj.samAccountName = $ADUser.samaccountname
 
-    $obj.nTHash = (Get-ADReplAccount -SamAccountName $ADUser.samaccountname -Server $ConfigurationParameter.ServerName -Credential $Credentials).NTHash
+    Try {
+        $obj.nTHash = (Get-ADReplAccount -SamAccountName $ADUser.samAccountName -Server $ConfigurationParameter.ServerName -Credential $Credentials).NTHash
+    }
+    Catch [UnauthorizedAccessException] {
+        Write-Log -Message "Unable to replicate passwords: $_" -Level Error
+        throw
+    }
+    Catch {
+        Write-Log -Message "Unable to replicate password for user $($ADUser.samaccountname): $_" -Level Warning
+        $obj."[ErrorName]" = "replication-error"
+        $obj."[ErrorDetail]" = $_
+        $obj.nTHash = $null
+    }
 
 	$obj
 }
