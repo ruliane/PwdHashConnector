@@ -1,17 +1,18 @@
 # PwdHashConnector
-Password Synchronization based on PowerShell MA and DSInternals PowerShell module
-Active Directory Password Synchronization Management Agent for MIM 2016, based on Søren Granfeldt's PowerShell Management Agent and Michael Grafnetter's DSInternals libraries.
+This Management Agent for MIM 2016 allows synchronizing passwords between two (or more) Active Directory forests. It is intensively based on Søren Granfeldt's __PowerShell Management Agent__ and Michael Grafnetter's __DSInternals__ libraries.
 
 
 ## Prerequisites
 
+### MIM 2016
+This MA is to be used on MIM 2016. Of course you need it installed beforehand.
+
 ### PowerShell module
-You must have [Søren Granfeldt's Powershell Management Agent](https://github.com/sorengranfeldt/psma/releases)
+You must have [Søren Granfeldt's Powershell Management Agent](https://github.com/sorengranfeldt/psma/releases) installed.
 
 ### Account permissions
 The Management Agent account must have the following permissions
 * Source directory: "Replicate Directory Changes" and "Replicate Directory Changes All" on the domain root
-
 ![image](https://user-images.githubusercontent.com/5471186/204556109-f4ef2ef1-f84e-4053-824a-85cb4e3394f2.png)
 
 * Destination directory: "reset password" permissions on the target accounts
@@ -23,7 +24,6 @@ The Management Agent account must have the following permissions
 * Copy source to a directory of your choice, for example C:\Scripts\PwdHashConnector
 
 * Download and copy [Michael Grafnetter's DSInternals Powershell module](https://github.com/MichaelGrafnetter/DSInternals/releases) to the same directory. You now have the following content:
-
 ![image](https://user-images.githubusercontent.com/5471186/204508237-2d9c7785-0822-45c2-a29e-fd18bdea7ecf.png)
 
 * Create event log source:
@@ -31,6 +31,7 @@ The Management Agent account must have the following permissions
 
 ## Metaverse Schema
 In the Metaverse Designer, add a binary attribute to the class "person".
+
 ![image](https://user-images.githubusercontent.com/5471186/204515327-e24a7f69-2313-4bec-88fa-6f664f6bb82f.png)
 
 ## Management agent
@@ -44,8 +45,7 @@ In the Metaverse Designer, add a binary attribute to the class "person".
 * Configuration parameters :
   * ~~<ins>DomainName:</ins> Target Active Directory domain~~ (no more required)
   * <ins>ServerName:</ins> FQDN of the domain controller to query
-  * <ins>BaseDN:</ins> OUs to search accounts for. The first character specifies the separator. Example with a pipe as separator: BaseDN=|OU=External,OU=Accounts,DC=contoso,DC=local|OU=Internal,OU=Accounts,DC=contoso,DC=local
-
+  * <ins>BaseDN:</ins> OUs to search accounts for. The first character specifies the separator. Example with a pipe as separator: _BaseDN=|OU=External,OU=Accounts,DC=contoso,DC=local|OU=Internal,OU=Accounts,DC=contoso,DC=local_
 ![image](https://user-images.githubusercontent.com/5471186/204509806-27a0c9c1-3a97-4a7e-9f7c-473a12333701.png)
 
 ### Global Parameters screen
