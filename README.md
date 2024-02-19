@@ -1,5 +1,6 @@
 # PwdHashConnector
 Password Synchronization based on PowerShell MA and DSInternals PowerShell module
+Active Directory Password Synchronization Management Agent for MIM 2016, based on Søren Granfeldt's PowerShell Management Agent and Michael Grafnetter's DSInternals libraries.
 
 
 ## Prerequisites
@@ -37,20 +38,20 @@ In the Metaverse Designer, add a binary attribute to the class "person".
 ![image](https://user-images.githubusercontent.com/5471186/204509077-65fc69dc-a745-4c98-b1a4-89d2fb829268.png)
 
 ### Create Management Agent screen
-* Schema Script: Full path to pwdhash-schema.ps1
-* Username: Domain\user account used to connect your Active Directory (see Prerequisites)
-* Password: Password for this user account
+* <ins>Schema Script:</ins> Full path to pwdhash-schema.ps1
+* <ins>Username:</ins> Domain\user account used to connect your Active Directory (see Prerequisites)
+* <ins>Password:</ins> Password for this user account
 * Configuration parameters :
-  * ~~DomainName: Target Active Directory domain~~ (no more required)
-  * ServerName: FQDN of the domain controller to query
-  * BaseDN: OUs to search accounts for. The first character specifies the separator. Example with a pipe as separator: BaseDN=|OU=External,OU=Accounts,DC=contoso,DC=local|OU=Internal,OU=Accounts,DC=contoso,DC=local
+  * ~~<ins>DomainName:</ins> Target Active Directory domain~~ (no more required)
+  * <ins>ServerName:</ins> FQDN of the domain controller to query
+  * <ins>BaseDN:</ins> OUs to search accounts for. The first character specifies the separator. Example with a pipe as separator: BaseDN=|OU=External,OU=Accounts,DC=contoso,DC=local|OU=Internal,OU=Accounts,DC=contoso,DC=local
 
 ![image](https://user-images.githubusercontent.com/5471186/204509806-27a0c9c1-3a97-4a7e-9f7c-473a12333701.png)
 
 ### Global Parameters screen
-* Import Script: Full path to pwdhash-import.ps1
-* Export script: Full path to pwdhash-import.ps1
-* Password Management Script: Full path to pwdhash-schema.ps1 [Mandatory]
+* <ins>Import Script:</ins> Full path to pwdhash-import.ps1
+* <ins>Export script:</ins> Full path to pwdhash-import.ps1
+* <ins>Password Management Script:</ins> Full path to pwdhash-schema.ps1 [Mandatory]
 
 ![image](https://user-images.githubusercontent.com/5471186/204510433-4a1b3ac7-3d3b-4f16-94cc-685ed359cd08.png)
 
